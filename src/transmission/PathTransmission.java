@@ -1,33 +1,35 @@
 package transmission;
 
-import data.PathData;
-import data.Coordinate;
+import data.CartesianPlane;
+import data.XY;
+import data.DeadReckoner;
+
+import java.util.ArrayList;
 
 public class PathTransmission implements Transmission {
 
-    Coordinate currentPoint;
-    PathData coordinates;
+    CartesianPlane coordinates;
 
-    @Override
-    public void processTransmission(String input) {
-        // Get initial point x and y
-        currentPoint = new Coordinate(input.charAt(1), input.charAt(2));
-        coordinates.getPoints().add(currentPoint);
+    DeadReckoner deadReckoner;
 
-        for (int i = 3; i < input.length()-1; i++) {
-            // Subsequent data for are delta x and delta y values
-            int x = currentPoint.getX() + (int)input.charAt(i);
-            int y = currentPoint.getY() + (int)input.charAt(i+1);
-            Coordinate coord = new Coordinate(x, y);
-            coordinates.getPoints().add(coord);
-            currentPoint = coord;
-        }
-
-        // Notify program to draw
-
+    public PathTransmission() {
+        //deadReckoner = new DeadReckoner(coordinates);
     }
 
-    public PathData getCoordinates() {
-        return coordinates;
+    @Override
+    public void processTransmission(ArrayList<Integer> signal) {
+        // Get initial point x and y
+        XY currentPoint = new XY(signal.get(0), signal.get(1));
+        coordinates.getPoints().add(currentPoint);
+
+
+        /*for (int i = 3; i < signal.length()-1; i++) { TODO figure out and re-implement.
+            // Subsequent data for are delta x and delta y values
+            double x = currentPoint.getX() + (int)signal.charAt(i);
+            double y = currentPoint.getY() + (int)signal.charAt(i+1);
+            XY coord = new XY(x, y);
+            coordinates.getPoints().add(coord);
+            currentPoint = coord;
+        }*/
     }
 }

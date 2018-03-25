@@ -75,7 +75,7 @@ public class SerialController implements SerialPortEventListener {
         }
 
         try {
-            // open serial port, and use class name for the appName.
+            // open serial port, and use class name for the APP_NAME.
             serialPort = (SerialPort) portId.open(this.getClass().getName(),
                     TIME_OUT);
 
@@ -128,7 +128,7 @@ public class SerialController implements SerialPortEventListener {
                         // flush not including the end transmission signal.
                         try {
                             TransmissionController.flushTransmission(transmission.toString().substring(0, transmission.length()));
-                        } catch (InvalidTransmissionEx e) {
+                        } catch (InvalidTransmissionException e) {
                             e.printStackTrace();
                         }
                         transmission.setLength(0);
@@ -141,6 +141,7 @@ public class SerialController implements SerialPortEventListener {
             }
         }
 
+        // close method must be called synchronized.
         if (closeSerial) {
             close();
         }

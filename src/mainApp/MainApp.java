@@ -1,12 +1,14 @@
-package gui;
+package mainApp;
 
 import data.GlobalConstants;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import transmission.TransmissionController;
 
+/**
+ * MainApp
+ */
 public class MainApp extends Application {
 
     Controller controller;
@@ -15,7 +17,7 @@ public class MainApp extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         BorderPane root = new BorderPane();
-        primaryStage.setTitle(GlobalConstants.appName);
+        primaryStage.setTitle(GlobalConstants.APP_NAME);
         primaryStage.setScene(new Scene(root, 800, 600));
         primaryStage.show();
 

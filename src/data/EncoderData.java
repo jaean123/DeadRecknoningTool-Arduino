@@ -1,14 +1,15 @@
 package data;
 
-public class EncoderCount {
+public class EncoderData {
 
     private int leftTicks;
     private int rightTicks;
     private int elapsedTime;
 
-    public EncoderCount(int leftTicks, int rightTicks) {
+    public EncoderData(int leftTicks, int rightTicks, int elapsedTime) {
         this.leftTicks = leftTicks;
         this.rightTicks = rightTicks;
+        this.elapsedTime = elapsedTime;
     }
 
     public int getLeftTicks() {
