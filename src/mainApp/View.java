@@ -1,20 +1,21 @@
 package mainApp;
 
+import data.CartesianPlane;
 import data.GlobalConstants;
+import data.XY;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Polyline;
-import transmission.EncoderTransmission;
-import transmission.TransmissionController;
 
 /**
  * View class deals with GUI layout, styling, and event handlers.
  */
 public class View {
 
-    public static String stylesheet = "mainApp/styles.css";
+    public static final String STYLESHEET = "mainApp/styles.css";
+    public static final double TRANSLATE_BY = 10;
 
     private MainApp app;
 
@@ -33,7 +34,8 @@ public class View {
     private Label comPortTextFieldLabel;
     private TextField comPortTextField;
 
-    private Polyline points;
+    private Draw actualPath; // Dead reckoned path.
+    private Draw targetPath; // Path drawn.
 
     public View(BorderPane root, MainApp app) {
         this.root = root;
@@ -41,6 +43,7 @@ public class View {
         setLayout();
         applyStyles();
         initEventHandlers();
+        startDrawingPath();
     }
 
     /**
@@ -82,6 +85,7 @@ public class View {
 
         // Path will be drawn in this Pane.
         pathPane = new Pane();
+        pathPane.setPrefHeight(350);
 
         root.setTop(buttonPane);
         root.setCenter(plotPane);
@@ -92,8 +96,8 @@ public class View {
      * Applies the CSS styles on the various GUI elements.
      */
     public void applyStyles() {
-        // Add stylesheet to root.
-        root.getScene().getStylesheets().add(stylesheet);
+        // Add STYLESHEET to root.
+        root.getScene().getStylesheets().add(STYLESHEET);
         root.setId("root");
 
         // Apply styles to various UI components
@@ -112,26 +116,39 @@ public class View {
      */
     public void initEventHandlers() {
         // Serial button handler.
-        serialBtn.setOnAction(e -> {
-            app.getController().processSerialOpen(serialBtn, comPortTextField.getText());
-        });
+        serialBtn.setOnAction(e -> app.getController().processSerialOpen(serialBtn, comPortTextField.getText()));
 
         // Info button handler.
-        aboutBtn.setOnAction(e -> {
-            showInfoDialog(GlobalConstants.ABOUT_TEXT);
-        });
+        aboutBtn.setOnAction(e -> showInfoDialog(GlobalConstants.ABOUT_TEXT));
+
+        zoomInBtn.setOnAction(e -> zoomIn());
+
+        zoomOutBtn.setOnAction(e -> zoomOut());
+
+        // Focus on root BorderPane so that the textfield will not be in focus.
+        root.setOnMouseClicked(e -> root.requestFocus());
 
         // handle plus or minus zoom key presses.
-        root.getScene().setOnKeyPressed(e -> {
-            app.getController().processZoom(e.getCode());
-        });
+        root.getScene().setOnKeyPressed(e -> app.getController().processKeyPress(e));
     }
 
     public void startDrawingPath() {
-        EncoderTransmission encoderTransmission = TransmissionController.getInstance().getEncoderTransmission();
-        Color lineColor = Helpers.hexToRGB(GlobalConstants.DEAD_RECKONED_PATH_LINE_COLOR);
-        Draw draw = new Draw(pathPane, encoderTransmission, lineColor);
-        draw.startDrawing();
+//        CartesianPlane path = TransmissionController.getInstance().getEncoderTransmission().getDeadReckoner().getPlane();
+        CartesianPlane path = new CartesianPlane();
+        ObservableList<XY> points = path.getPoints();
+        points.add(new XY(0,0));
+        points.add(new XY(1,1));
+        points.add(new XY(2,2));
+        points.add(new XY(3,3));
+        points.add(new XY(4,4));
+        points.add(new XY(5,5));
+        points.add(new XY(100,100));
+        points.add(new XY(0,100));
+        pathPane.setBackground(new Background(new BackgroundFill(Color.GRAY, CornerRadii.EMPTY, Insets.EMPTY)));
+//        Color lineColor = Helpers.hexToRGB(GlobalConstants.DEAD_RECKONED_PATH_LINE_COLOR);
+        Color lineColor = Color.BLUE;
+        actualPath = new Draw(pathPane, path, lineColor);
+        targetPath = new Draw(pathPane, path, lineColor);
     }
 
     /**
@@ -144,5 +161,42 @@ public class View {
         alert.setHeaderText(null);
         alert.setContentText(text);
         alert.showAndWait();
+    }
+
+    /**
+     * Zoom path view in/out.
+     */
+    private void zoom(double factor) {
+        actualPath.setScaleFactor(actualPath.getScaleFactor()*factor);
+        targetPath.setScaleFactor(targetPath.getScaleFactor()*factor);
+    }
+
+    public void zoomIn() {
+        zoom(1.1);
+    }
+
+    public void zoomOut() {
+        zoom(0.90);
+    }
+
+    private void translate(double dX, double dY) {
+        actualPath.translate(dX, dY);
+        targetPath.translate(dX, dY);
+    }
+
+    public void translateUp() {
+        translate(0, -TRANSLATE_BY);
+    }
+
+    public void translateDown() {
+        translate(0, TRANSLATE_BY);
+    }
+
+    public void translateRight() {
+        translate(TRANSLATE_BY, 0);
+    }
+
+    public void translateLeft() {
+        translate(-TRANSLATE_BY, 0);
     }
 }

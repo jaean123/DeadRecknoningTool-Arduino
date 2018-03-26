@@ -2,6 +2,7 @@ package mainApp;
 
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import transmission.Transmission;
 import transmission.TransmissionController;
 
@@ -43,12 +44,38 @@ public class Controller {
         isSerialOpen = !isSerialOpen;
     }
 
-    public void processZoom(KeyCode code) {
-        if (code == KeyCode.PLUS) {
-
+    public void processKeyPress(KeyEvent e) {
+        KeyCode code = e.getCode();
+        View view = app.getView();
+        // Zoom in
+        if (code == KeyCode.ADD) {
+            view.zoomIn();
+            e.consume();
         }
-        else if (code == KeyCode.MINUS) {
-
+        // Zoom out
+        else if (code == KeyCode.SUBTRACT) {
+            view.zoomOut();
+            e.consume();
+        }
+        // Translate up
+        else if (code == KeyCode.UP) {
+            view.translateUp();
+            e.consume();
+        }
+        // Translate right
+        else if (code == KeyCode.RIGHT) {
+            view.translateRight();
+            e.consume();
+        }
+        // Translate down
+        else if (code == KeyCode.DOWN) {
+            view.translateDown();
+            e.consume();
+        }
+        // Translate left
+        else if (code == KeyCode.LEFT) {
+            view.translateLeft();
+            e.consume();
         }
     }
 }

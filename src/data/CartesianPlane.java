@@ -17,24 +17,7 @@ public class CartesianPlane {
         this.points = FXCollections.observableList(new ArrayList<XY>());
     }
 
-    public CartesianPlane(ObservableList<XY> points) {
-        this.points = points;
-    }
-
     public ObservableList<XY> getPoints() {
         return points;
-    }
-
-    /**
-     * Scale the coordinates for zooming purposes.
-     * @param scaleFactor
-     */
-    public void setScale(double scaleFactor) {
-        for (int i = 0; i < points.size(); i++) {
-            XY p = points.get(i);
-            double newX = p.getX()*scaleFactor;
-            double newY = p.getY()*scaleFactor;
-            points.set(i, new XY(newX, newY));
-        }
     }
 }
