@@ -5,9 +5,6 @@ import data.GlobalConstants;
 import data.XY;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
-import javafx.scene.chart.LineChart;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
@@ -42,8 +39,8 @@ public class View {
     private Label comPortTextFieldLabel;
     private TextField comPortTextField;
 
-    private Draw actualPath; // Dead reckoned path.
-    private Draw targetPath; // Path drawn.
+    private PathPolyLine actualPath; // Dead reckoned path.
+    private PathPolyLine targetPath; // Path drawn.
 
     public View(BorderPane root, MainApp app) {
         this.root = root;
@@ -140,8 +137,18 @@ public class View {
         zoomOutBtn.setOnAction(e -> zoomOut());
 
         // Focus on root BorderPane so that the textfield will not be in focus.
-        root.setOnMouseClicked(e -> root.requestFocus());
-        splitPane.setOnMouseClicked(e -> root.requestFocus());
+        // TODO Fix this?
+        root.setOnMouseClicked(e -> {
+            if (!root.isFocused()) root.requestFocus();
+        });
+        splitPane.setOnMouseClicked(e -> {
+            if (!root.isFocused()) root.requestFocus();
+        });
+
+        pathPane.setOnMousePressed(e -> app.getController().processPathPaneMouseDown(e));
+        pathPane.setOnMouseDragged(e -> app.getController().processPathPaneMouseDrag(e));
+        pathPane.setOnMouseReleased(e -> app.getController().processPathPaneMouseDragReleased());
+        pathPane.setOnScroll(e -> app.getController().processPathPaneScroll(e));
 
         // handle plus or minus zoom key presses.
         root.getScene().setOnKeyPressed(e -> app.getController().processKeyPress(e));
@@ -166,8 +173,13 @@ public class View {
                         new BackgroundFill(
                                 GlobalConstants.PATH_PANE_BACKGROUND_COLOR, CornerRadii.EMPTY, Insets.EMPTY)));
 
-        actualPath = new Draw(pathPane, path, GlobalConstants.ACTUAL_PATH_LINE_COLOR);
-        targetPath = new Draw(pathPane, path, GlobalConstants.TARGET_PATH_LINE_COLOR);
+        actualPath = new PathPolyLine(path, GlobalConstants.ACTUAL_PATH_LINE_COLOR);
+        targetPath = new PathPolyLine(path, GlobalConstants.TARGET_PATH_LINE_COLOR);
+        actualPath.setScaleX(2.0);
+        actualPath.setScaleY(2.0);
+        pathPane.getChildren().addAll(actualPath, targetPath);
+//        actualPath = new Draw(pathPane, path, GlobalConstants.ACTUAL_PATH_LINE_COLOR);
+//        targetPath = new Draw(pathPane, path, GlobalConstants.TARGET_PATH_LINE_COLOR);
     }
 
     /**
@@ -196,22 +208,24 @@ public class View {
     /**
      * Zoom path view in/out.
      */
-    protected void zoom(double factor) {
-        actualPath.setScaleFactor(actualPath.getScaleFactor()*factor);
-        targetPath.setScaleFactor(targetPath.getScaleFactor()*factor);
+    protected void zoom(double increment) {
+        actualPath.setScaleFactor(actualPath.getScaleFactor() + increment);
+        targetPath.setScaleFactor(targetPath.getScaleFactor() + increment);
     }
 
     protected void zoomIn() {
-        zoom(1.1);
+        zoom(0.10);
     }
 
     protected void zoomOut() {
-        zoom(0.90);
+        zoom(-0.10);
     }
 
-    private void translate(double dX, double dY) {
-        actualPath.translate(dX, dY);
-        targetPath.translate(dX, dY);
+    public void translate(double dX, double dY) {
+        actualPath.setTranslateX(actualPath.getTranslateX() + dX);
+        actualPath.setTranslateY(actualPath.getTranslateY() + dY);
+        targetPath.setTranslateX(targetPath.getTranslateX() + dX);
+        targetPath.setTranslateY(targetPath.getTranslateY() + dY);
     }
 
     protected void translateUp() {
@@ -235,7 +249,7 @@ public class View {
      * TODO: Reset plot.
      */
     protected void clear() {
-        actualPath.clear();
-        targetPath.clear();
+        actualPath.getPoints().clear();
+        targetPath.getPoints().clear();
     }
 }

@@ -3,7 +3,8 @@ package mainApp;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import transmission.Transmission;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import transmission.TransmissionController;
 
 /**
@@ -12,8 +13,9 @@ import transmission.TransmissionController;
 public class Controller {
 
     private MainApp app;
-
     boolean isSerialOpen;
+    boolean onDragMode;
+    double prevMouseX, prevMouseY;
 
     public Controller(MainApp app) {
         this.app = app;
@@ -21,23 +23,22 @@ public class Controller {
 
     /**
      * Called when serial button is pressed
+     *
      * @param serialBtn The serial button.
-     * @param comPort COM port to connect to (only used when connecting).
+     * @param comPort   COM port to connect to (only used when connecting).
      */
     public void processSerialOpen(Button serialBtn, String comPort) {
         if (isSerialOpen) {
             // disconnect and change button text to "Open Serial".
             TransmissionController.getInstance().stopTransmission();
             serialBtn.setText("Open Serial");
-        }
-        else {
+        } else {
             // Connect and change button text to "Close Serial".
             boolean startSuccess = TransmissionController.getInstance().startTransmission(comPort);
             if (startSuccess) {
                 app.getView().startDrawingPath();
                 serialBtn.setText("Close Serial");
-            }
-            else {
+            } else {
                 app.getView().showInfoDialog("Connection failed. Could not find serial port.");
             }
         }
@@ -77,13 +78,45 @@ public class Controller {
             view.translateLeft();
             e.consume();
         }
-        if (code == KeyCode.A) {
-            app.getView().doDebug();
+        if (code == KeyCode.D) {
+//            app.getView().doDebug();
         }
     }
 
     public void processClear() {
         app.getView().clear();
         TransmissionController.clear();
+    }
+
+    public void processPathPaneMouseDown(MouseEvent e) {
+        onDragMode = true;
+        prevMouseX = e.getX();
+        prevMouseY = e.getY();
+    }
+
+    public void processPathPaneMouseDrag(MouseEvent e) {
+        if (onDragMode) {
+            double x = e.getX();
+            double y = e.getY();
+            double dx = x - prevMouseX;
+            double dy = y - prevMouseY;
+            prevMouseX = x;
+            prevMouseY = y;
+            app.getView().translate(dx, dy);
+        }
+    }
+
+    public void processPathPaneMouseDragReleased() {
+        if (onDragMode) onDragMode = false;
+    }
+
+    public void processPathPaneScroll(ScrollEvent e) {
+        double dy = e.getDeltaY();
+        if (dy > 0) {
+            app.getView().zoomIn();
+        }
+        else {
+            app.getView().zoomOut();
+        }
     }
 }

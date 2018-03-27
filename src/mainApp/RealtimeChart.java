@@ -1,6 +1,8 @@
 package mainApp;
 
 import data.CartesianPlane;
+import data.XY;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -8,19 +10,64 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 
+import java.util.List;
 import java.util.Vector;
 
-public class RealtimeChart {
+/**
+ * This line chart updates real time as the data changes.
+ */
+public class RealtimeChart extends Region {
 
-    private Vector<ObservableList<XYChart.Series<Number, Number>>> seriesList;
+    private Vector<ObservableList<XYChart.Series<Number, Number>>> seriesPlotted;
+    private ObservableList<CartesianPlane> seriesList;
+    private LineChart<Number, Number> chart;
     private XYChart.Series series;
     private NumberAxis xAxis;
     private NumberAxis yAxis;
     private Pane plotPane;
 
-    private void RealtimeChart(Pane plotPane, ObservableList<CartesianPlane> data) {
+    public void RealtimeChart(Pane plotPane, ObservableList<CartesianPlane> seriesList) {
         this.plotPane = plotPane;
         this.seriesList = seriesList;
+        attachSeriesListListener();
+        attachSeriesListeners(seriesList);
+    }
+
+    /**
+     * Adds listener to listen for changes on the list of series.
+     */
+    private void attachSeriesListListener() {
+        // Add change listener to listen for any changes in the list of series.
+        seriesList.addListener((ListChangeListener) c -> {
+            // A data series has been added. Add this series to listen for change events.
+            if (c.wasAdded()) {
+                List<CartesianPlane> subList = c.getAddedSubList();
+                attachSeriesListeners(subList);
+                refreshChart();
+            } else if (c.wasRemoved()) {
+                refreshChart();
+            }
+        });
+    }
+
+    /**
+     * Adds listeners on individual series.
+     *
+     * @param lists
+     */
+    private void attachSeriesListeners(List<CartesianPlane> lists) {
+        for (int i = 0; i < lists.size(); i++) {
+            ObservableList<XY> currentSeries = lists.get(i).getPoints();
+            currentSeries.addListener((ListChangeListener) c -> updateSingleSeries(c));
+        }
+    }
+
+    public void updateSingleSeries(ListChangeListener.Change c) {
+
+    }
+
+    private void refreshChart() {
+
     }
 
     private void addLineChart() {
