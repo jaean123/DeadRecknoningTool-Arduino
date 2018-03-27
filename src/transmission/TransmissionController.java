@@ -76,4 +76,10 @@ public class TransmissionController {
         }
         return signal;
     }
+
+    public static void clear() {
+        if (instance != null) {
+            instance.getEncoderTransmission().clear();
+        }
+    }
 }

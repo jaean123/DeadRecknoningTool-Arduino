@@ -77,5 +77,13 @@ public class Controller {
             view.translateLeft();
             e.consume();
         }
+        if (code == KeyCode.A) {
+            app.getView().doDebug();
+        }
+    }
+
+    public void processClear() {
+        app.getView().clear();
+        TransmissionController.clear();
     }
 }

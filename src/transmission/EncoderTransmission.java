@@ -31,4 +31,12 @@ public class EncoderTransmission implements Transmission {
     public DeadReckoner getDeadReckoner() {
         return deadReckoner;
     }
+
+    /**
+     * Clears the encoder history data and the dead reckoned data.
+     */
+    public void clear() {
+        encoderHistory.clear();
+        deadReckoner.getPlane().getPoints().clear();
+    }
 }

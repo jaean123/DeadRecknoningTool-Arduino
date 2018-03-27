@@ -1,13 +1,39 @@
 package data;
 
+import javafx.scene.paint.Color;
+
 public class GlobalConstants {
 
-    public static String APP_NAME = "Dead Reckoning Tool";
+    // PROGRAM PARAMETERS
+    public static final String VERSION = "1.0.0";
+    public static final String APP_ICON_LOCATION = "./resources/icon.png";
 
-    public static String ABOUT_TEXT =
-            "ArduinoPath Serial\nDeveloped by: Jae An\nEmail: jaean37@gmail.com";
+    // ROBOT PARAMETERS
+    public static final double WHEEL_RADIUS = 0;
 
-    public static double WHEEL_RADIUS = 0;
+    // TEXT CONSTANTS
+    public static final String APP_NAME = "Dead Reckoning Tool";
+    public static final String ABOUT_TEXT = "ArduinoPath Serial" +
+                    "\nVersion: " + VERSION +
+                    "\nDeveloped by: Jae An" +
+                    "\nEmail: jaean37@gmail.com";
 
-    public static String DEAD_RECKONED_PATH_LINE_COLOR = "000000";
+    // BUTTON LABELS AND TOOLTIPS
+    public static final String ENTER_PORT =  "Enter Port: ";
+    public static final String OPEN_SERIAL = "Open Serial";
+    public static final String OPEN_SERIAL_TOOLTIP = "Open serial communication at COM port";
+    public static final String ZOOM_IN = "+";
+    public static final String ZOOM_IN_TOOLTIP = "Zoom In (+ key)";
+    public static final String ZOOM_OUT = "-";
+    public static final String ZOOM_OUT_TOOLTIP = "Zoom Out (- key)";
+    public static final String ABOUT = "About";
+    public static final String ABOUT_TOOLTIP = "About Program";
+    public static final String CLEAR = "Clear";
+    public static final String CLEAR_TOOLTIP = "Clear path drawing and plots";
+//    public static final String ;
+
+    // COLORS
+    public static final Color ACTUAL_PATH_LINE_COLOR = Color.BLACK;
+    public static final Color TARGET_PATH_LINE_COLOR = Color.BLUE;
+    public static final Color PATH_PANE_BACKGROUND_COLOR = Color.WHITE;
 }

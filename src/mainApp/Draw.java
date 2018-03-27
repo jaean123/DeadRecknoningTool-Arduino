@@ -42,6 +42,12 @@ public class Draw {
         pathPane.getChildren().add(polyline);
         refreshDrawing();
         attachPlaneListener();
+
+        double width = pathPane.getPrefWidth();
+        double height = pathPane.getPrefHeight();
+
+        // Translate so that the path drawing does not start at the edge, but at the center of the path pane.
+        translate(width/2, height/2);
     }
 
     private void refreshDrawing() {
@@ -64,10 +70,15 @@ public class Draw {
         ObservableList<XY> pointsToDraw = path.getPoints();
         pointsToDraw.addListener((ListChangeListener)(c -> {
             // Add the latest location to the polyline.
-            XY latest = pointsToDraw.get(pointsToDraw.size());
-            double x = latest.getX()*scaleFactor;
-            double y = latest.getY()*scaleFactor;
-            polyPoints.addAll(x, y);
+            if (c.wasAdded() && c.getAddedSize() == 1) {
+                XY latest = pointsToDraw.get(pointsToDraw.size());
+                double x = latest.getX()*scaleFactor;
+                double y = latest.getY()*scaleFactor;
+                polyPoints.addAll(x, y);
+            }
+            else {
+                refreshDrawing();
+            }
         }));
     }
 
@@ -114,5 +125,12 @@ public class Draw {
 
     public double getScaleFactor() {
         return scaleFactor;
+    }
+
+    /**
+     * Clears the poly points.
+     */
+    public void clear() {
+        polyPoints.clear();
     }
 }
