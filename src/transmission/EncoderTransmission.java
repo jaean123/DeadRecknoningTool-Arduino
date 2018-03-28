@@ -37,6 +37,6 @@ public class EncoderTransmission implements Transmission {
      */
     public void clear() {
         encoderHistory.clear();
-        deadReckoner.getPlane().getPoints().clear();
+        deadReckoner.getSeries().getData().clear();
     }
 }

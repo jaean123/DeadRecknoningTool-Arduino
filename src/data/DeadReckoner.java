@@ -2,17 +2,18 @@ package data;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.scene.chart.XYChart;
 
 /**
  * Accepts input of the encoderHistory count for left and right wheels and converts it to path in cartesian coordinates.
  */
 public class DeadReckoner {
 
-    // Encoder data for each iteration
+    // Encoder series for each iteration
     private final ObservableList<EncoderData> encoderHistory;
 
     // 2D cartesian plane will store the location that the robot will follow.
-    private CartesianPlane plane;
+    private XYChart.Series<Double, Double> series;
 
     double radius; // wheel radius
     double length; // length between left to right wheel
@@ -28,7 +29,7 @@ public class DeadReckoner {
         thetaCurr = 0;
         xCurr = 0;
         yCurr = 0;
-        plane = new CartesianPlane();
+        series = new XYChart.Series<Double, Double>();
         addChangeListener();
     }
 
@@ -40,18 +41,20 @@ public class DeadReckoner {
 
     private void addChangeListener() {
         encoderHistory.addListener((ListChangeListener)(c -> {
-            ObservableList<XY> points = plane.getPoints();
             EncoderData encoderData = encoderHistory.get(encoderHistory.size());
+            ObservableList<XYChart.Data<Double, Double>> list = series.getData();
 
-            XY previousLocation = points.get(points.size()-1);
-            XY changeInLocation = computeLocationChange(encoderData);
-            XY currentLocation = previousLocation.add(changeInLocation);
+            double[] change = computeLocationChange(encoderData);
+            double prevX = list.get(list.size()-1).getXValue();
+            double prevY = list.get(list.size()-1).getYValue();
+            double currX = prevX + change[0];
+            double currY = prevY + change[1];
 
-            plane.getPoints().add(currentLocation);
+            list.add(new XYChart.Data<>(currX, currY));
         }));
     }
 
-    private XY computeLocationChange(EncoderData encoderData) {
+    private double[] computeLocationChange(EncoderData encoderData) {
         int ticksLeft = encoderData.getLeftTicks();
         int ticksRight = encoderData.getRightTicks();
         int dt = encoderData.getElapsedTime();
@@ -101,10 +104,10 @@ public class DeadReckoner {
         yCurr = yNext;
         thetaCurr = thetaNext;
 
-        return new XY(dx, dy);
+        return new double[]{dx, dy};
     }
 
-    public CartesianPlane getPlane() {
-        return plane;
+    public XYChart.Series<Double, Double> getSeries() {
+        return series;
     }
 }

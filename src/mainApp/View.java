@@ -1,10 +1,12 @@
 package mainApp;
 
-import data.CartesianPlane;
 import data.GlobalConstants;
-import data.XY;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
@@ -17,14 +19,13 @@ import java.io.File;
  */
 public class View {
 
-    public static final String STYLESHEET = "mainApp/styles.css";
     public static final double TRANSLATE_BY = 10;
 
     private MainApp app;
 
     private BorderPane root;
     private SplitPane splitPane;
-    private Pane plotPane;
+    private HBox plotPane;
     private Pane pathPane;
     private HBox buttonPane;
 
@@ -49,6 +50,43 @@ public class View {
         applyStyles();
         initEventHandlers();
         startDrawingPath();
+        testPlotPane();
+    }
+
+    private void testPlotPane() {
+        NumberAxis xAxis = new NumberAxis();
+        NumberAxis yAxis = new NumberAxis();
+        xAxis.setLabel("Number of Month");
+        //creating the chart
+        final LineChart<Number, Number> lineChart =
+                new LineChart<Number, Number>(xAxis, yAxis);
+
+        lineChart.setTitle("Stock Monitoring, 2010");
+        //defining a series
+        XYChart.Series series = new XYChart.Series();
+        series.setName("My portfolio");
+        //populating the series with data
+
+        series.getData().add(new XYChart.Data(1, 23));
+        series.getData().add(new XYChart.Data(2, 14));
+        series.getData().add(new XYChart.Data(3, 15));
+        series.getData().add(new XYChart.Data(4, 24));
+        series.getData().add(new XYChart.Data(5, 34));
+        series.getData().add(new XYChart.Data(6, 36));
+        series.getData().add(new XYChart.Data(7, 22));
+        series.getData().add(new XYChart.Data(8, 45));
+        series.getData().add(new XYChart.Data(9, 43));
+        series.getData().add(new XYChart.Data(10, 17));
+        series.getData().add(new XYChart.Data(11, 29));
+        series.getData().add(new XYChart.Data(12, 25));
+
+        RealtimeChart chart = new RealtimeChart("Test Chart", "x", "y", series);
+        plotPane.getChildren().add(chart);
+        plotPane.setAlignment(Pos.CENTER);
+
+
+        series.getData().add(new XYChart.Data(100, 25));
+        series.getData().add(new XYChart.Data(120, 200));
     }
 
     /**
@@ -89,7 +127,7 @@ public class View {
 
         // Bottom portion of app.
         splitPane = new SplitPane();
-        plotPane = new Pane();
+        plotPane = new HBox();
 
         // Path will be drawn in this Pane.
         pathPane = new Pane();
@@ -105,17 +143,27 @@ public class View {
      * Applies the CSS styles on the various GUI elements.
      */
     private void applyStyles() {
-        // Add STYLESHEET to root.
-        root.getScene().getStylesheets().add(STYLESHEET);
+        // Add STYLESHEET_CUSTOM to root.
+        root.getScene().getStylesheets().add(GlobalConstants.getFilePath(GlobalConstants.STYLESHEET_BOOTSTRAP));
+        root.getScene().getStylesheets().add(GlobalConstants.getFilePath(GlobalConstants.STYLESHEET_CUSTOM));
+
         root.setId("root");
 
         // Apply styles to various UI components
-        clearBtn.getStyleClass().add("button");
-        serialBtn.getStyleClass().add("button");
-        comPortTextFieldLabel.setPadding(new Insets(3, 0, 0 , 0));
+/*        clearBtn.getStyleClass().add("success");
+        serialBtn.getStyleClass().add("success");
+        zoomOutBtn.getStyleClass().add("success");
+        zoomInBtn.getStyleClass().add("success");
+        aboutBtn.getStyleClass().add("success");
+        clearBtn.getStyleClass().add("success");*/
+
+        comPortTextFieldLabel.setPadding(new Insets(3, 0, 0, 0));
 
         topLeftContainer.getStyleClass().add("buttonPannelContainer");
         topRightContainer.getStyleClass().add("buttonPannelContainer");
+
+        plotPane.setId("plotPane");
+        pathPane.setId("pathPane");
 
         buttonPane.setId("buttonPane");
     }
@@ -156,17 +204,16 @@ public class View {
 
     protected void startDrawingPath() {
 //        CartesianPlane path = TransmissionController.getInstance().getEncoderTransmission().getDeadReckoner().getPlane();
-        CartesianPlane path = new CartesianPlane();
+        XYChart.Series<Double, Double> path = new XYChart.Series<>();
 
-        ObservableList<XY> points = path.getPoints();
-        points.add(new XY(0,0));
-        points.add(new XY(1,1));
-        points.add(new XY(2,2));
-        points.add(new XY(3,3));
-        points.add(new XY(4,4));
-        points.add(new XY(5,5));
-        points.add(new XY(100,100));
-        points.add(new XY(0,100));
+        path.getData().add(new XYChart.Data<Double, Double>(0.0, 0.0));
+        path.getData().add(new XYChart.Data<Double, Double>(1.0, 1.0));
+        path.getData().add(new XYChart.Data<Double, Double>(2.0, 2.0));
+        path.getData().add(new XYChart.Data<Double, Double>(3.0, 3.0));
+        path.getData().add(new XYChart.Data<Double, Double>(4.0, 4.0));
+        path.getData().add(new XYChart.Data<Double, Double>(5.0, 5.0));
+        path.getData().add(new XYChart.Data<Double, Double>(100.0, 100.0));
+        path.getData().add(new XYChart.Data<Double, Double>(0.0, 100.0));
 
         pathPane.setBackground(
                 new Background(
@@ -184,6 +231,7 @@ public class View {
 
     /**
      * Shows information dialog
+     *
      * @param text The text to be displayed
      */
     protected void showInfoDialog(String text) {
@@ -192,10 +240,11 @@ public class View {
         // Add icon to the info pop up.
         try {
             String iconLocation = new File(GlobalConstants.APP_ICON_LOCATION).toURI().toURL().toString();
-            Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+            Scene scene = alert.getDialogPane().getScene();
+            scene.getStylesheets().add(GlobalConstants.getFilePath(GlobalConstants.STYLESHEET_BOOTSTRAP));
+            Stage stage = (Stage) scene.getWindow();
             stage.getIcons().add(new Image(iconLocation));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -249,7 +298,6 @@ public class View {
      * TODO: Reset plot.
      */
     protected void clear() {
-        actualPath.getPoints().clear();
-        targetPath.getPoints().clear();
+        // TODO: implement this.
     }
 }

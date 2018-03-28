@@ -1,18 +1,17 @@
 package mainApp;
 
-import data.CartesianPlane;
-import data.XY;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.scene.chart.XYChart;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polyline;
 
 public class PathPolyLine extends Polyline {
 
-    private CartesianPlane path;
+    private XYChart.Series<Double, Double> path;
     private double scaleFactor;
 
-    public PathPolyLine(CartesianPlane path, Color lineColor) {
+    public PathPolyLine(XYChart.Series<Double, Double> path, Color lineColor) {
         this.path = path;
         this.scaleFactor = 1;
         setStroke(lineColor);
@@ -25,11 +24,11 @@ public class PathPolyLine extends Polyline {
      */
     private void refreshDrawing() {
         getPoints().clear();
-        ObservableList<XY> pointsToDraw = path.getPoints();
+        ObservableList<XYChart.Data<Double, Double>> pointsToDraw = path.getData();
         for (int i = 0; i < pointsToDraw.size(); i++) {
-            XY p = pointsToDraw.get(i);
-            double x = p.getX()*scaleFactor;
-            double y = p.getY()*scaleFactor;
+            XYChart.Data<Double, Double> p = pointsToDraw.get(i);
+            double x = p.getXValue()*scaleFactor;
+            double y = p.getYValue()*scaleFactor;
             getPoints().addAll(x, y);
         }
     }
@@ -40,13 +39,13 @@ public class PathPolyLine extends Polyline {
      */
     private void attachDataChangeListener() {
         // Listen for changes on coordinate data to be drawn.
-        ObservableList<XY> pointsToDraw = path.getPoints();
+        ObservableList<XYChart.Data<Double, Double>> pointsToDraw = path.getData();
         pointsToDraw.addListener((ListChangeListener)(c -> {
             // Add the latest location to the polyline.
             if (c.wasAdded() && c.getAddedSize() == 1) {
-                XY latest = pointsToDraw.get(pointsToDraw.size());
-                double x = latest.getX()*scaleFactor;
-                double y = latest.getY()*scaleFactor;
+                XYChart.Data<Double, Double> latest = (XYChart.Data<Double, Double>)c.getAddedSubList().get(0);
+                double x = latest.getXValue()*scaleFactor;
+                double y = latest.getYValue()*scaleFactor;
                 getPoints().addAll(x, y);
             }
             else {
@@ -60,7 +59,7 @@ public class PathPolyLine extends Polyline {
      * @param scaleFactor
      */
     public void setScaleFactor(double scaleFactor) {
-        this.scaleFactor = scaleFactor > 1 ? scaleFactor : 1;
+        this.scaleFactor = scaleFactor > 0.05 ? scaleFactor : 0.05;
         refreshDrawing();
     }
 

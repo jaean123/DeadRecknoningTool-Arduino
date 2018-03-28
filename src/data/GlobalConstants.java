@@ -2,11 +2,17 @@ package data;
 
 import javafx.scene.paint.Color;
 
+import java.io.File;
+import java.net.MalformedURLException;
+
 public class GlobalConstants {
 
     // PROGRAM PARAMETERS
     public static final String VERSION = "1.0.0";
     public static final String APP_ICON_LOCATION = "./resources/icon.png";
+    public static final String STYLESHEET_CUSTOM = "./resources/styles.css";
+    public static final String STYLESHEET_BOOTSTRAP = "./resources/bootstrap3.css";
+    public static final String CUSTOM_FONT = "./resources/robotoFont/Roboto-Regular.ttf";
 
     // ROBOT PARAMETERS
     public static final double WHEEL_RADIUS = 0;
@@ -36,4 +42,15 @@ public class GlobalConstants {
     public static final Color ACTUAL_PATH_LINE_COLOR = Color.BLACK;
     public static final Color TARGET_PATH_LINE_COLOR = Color.BLUE;
     public static final Color PATH_PANE_BACKGROUND_COLOR = Color.WHITE;
+
+    public static String getFilePath(String location) {
+        String filePath = null;
+        try {
+            filePath = (new File(location).toURI().toURL().toString());
+        }
+        catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return filePath;
+    }
 }

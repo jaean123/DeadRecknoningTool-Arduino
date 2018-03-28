@@ -22,7 +22,7 @@ public class MainApp extends Application {
         BorderPane root = new BorderPane();
         primaryStage.setTitle(GlobalConstants.APP_NAME);
         primaryStage.setScene(new Scene(root, 800, 600));
-        String iconLocation = new File(GlobalConstants.APP_ICON_LOCATION).toURI().toURL().toString();
+        String iconLocation = GlobalConstants.getFilePath(GlobalConstants.APP_ICON_LOCATION);
         primaryStage.getIcons().add(new Image(iconLocation));
         primaryStage.show();
 

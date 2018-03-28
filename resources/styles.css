@@ -1,0 +1,59 @@
+.root {
+    -fx-background-color: white;
+}
+
+#buttonPane {
+    -fx-border-width: 1px 0 0 0;
+    -fx-border-color: #BBBBBB;
+    -fx-padding: 10px;
+    -fx-spacing: 10px;
+}
+
+#plotPane {
+    -fx-background-color: white;
+    -fx-border-width: 0 1px 0 0;
+    -fx-border-color: #d9d9d9;
+}
+
+#pathPane {
+    -fx-background-color: white;
+    -fx-border-width: 0 0 0 1px;
+    -fx-border-color: #d9d9d9;
+}
+
+.buttonPannelContainer {
+    -fx-spacing: 10px;
+}
+
+.border-left {
+    -fx-border-width: 0 0 0 1px;
+    -fx-border-color: #BBBBBB;
+}
+
+
+
+/* CHART STYLES */
+
+.realtimeChart {
+    -fx-border-width: 2px;
+    -fx-border-color: black;
+}
+.chart-plot-background {
+    -fx-background-color: white;
+}
+.chart-vertical-grid-lines {
+    -fx-stroke-width: 0;
+}
+.chart-horizontal-grid-lines {
+    -fx-stroke-width: 0;
+}
+.chart-alternative-row-fill {
+    -fx-fill: #f1f1f1;
+    -fx-stroke: transparent;
+    -fx-stroke-width: 0;
+}
+.axis {
+    -fx-font-size: 1.2em;
+    -fx-tick-length: 10;
+    -fx-minor-tick-length: 5;
+}

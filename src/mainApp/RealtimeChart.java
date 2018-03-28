@@ -1,113 +1,151 @@
 package mainApp;
 
-import data.CartesianPlane;
-import data.XY;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * This line chart updates real time as the data changes.
  */
 public class RealtimeChart extends Region {
 
-    private Vector<ObservableList<XYChart.Series<Number, Number>>> seriesPlotted;
-    private ObservableList<CartesianPlane> seriesList;
+    private ObservableList<XYChart.Series<Number, Number>> seriesList;
+
     private LineChart<Number, Number> chart;
-    private XYChart.Series series;
+
     private NumberAxis xAxis;
     private NumberAxis yAxis;
-    private Pane plotPane;
 
-    public void RealtimeChart(Pane plotPane, ObservableList<CartesianPlane> seriesList) {
-        this.plotPane = plotPane;
+    private double xWidth;
+    private double xMax;
+
+
+    public RealtimeChart(String title, String xLabel, String yLabel, XYChart.Series<Number, Number> series) {
+        ObservableList<XYChart.Series<Number, Number>> list = FXCollections.observableList(new ArrayList<>());
+        list.add(series);
+        constructObject(title, xLabel, yLabel, list);
+    }
+
+    public RealtimeChart(String title, String xLabel, String yLabel, ObservableList<XYChart.Series<Number, Number>> seriesList) {
+        constructObject(title, xLabel, yLabel, seriesList);
+    }
+
+    private void constructObject(String title, String xLabel, String yLabel, ObservableList<XYChart.Series<Number, Number>> seriesList) {
         this.seriesList = seriesList;
+        xWidth = 5;
+
+        xAxis = new NumberAxis();
+        xAxis.setAutoRanging(false);
+        xAxis.setLabel(xLabel);
+
+        yAxis = new NumberAxis();
+        yAxis.setAutoRanging(true);
+        yAxis.setLabel(yLabel);
+
+        chart = new LineChart<Number, Number>(xAxis, yAxis, seriesList);
         attachSeriesListListener();
-        attachSeriesListeners(seriesList);
+        attachSingleSeriesListener(seriesList);
+        setLayout();
+    }
+
+    private void setLayout() {
+        getStyleClass().add("realtimeChart");
+        getChildren().add(chart);
+        setScaleX(1.2);
+        setScaleY(1.2);
+        setTranslateY(400);
+        updateLegendVisible();
+    }
+
+    private void updateLegendVisible() {
+        if (seriesList.size() == 1) {
+            chart.setLegendVisible(false);
+        } else {
+            chart.setLegendVisible(true);
+        }
     }
 
     /**
-     * Adds listener to listen for changes on the list of series.
+     * Attaches listeners for every XYData.Data in XYCHart.Series.
+     *
+     * @param seriesList
+     */
+    private void attachSingleSeriesListener(List<XYChart.Series<Number, Number>> seriesList) {
+        for (int i = 0; i < seriesList.size(); i++) {
+            ObservableList<XYChart.Data<Number, Number>> data = seriesList.get(i).getData();
+            data.addListener((ListChangeListener) c -> {
+                processSingleSeriesChange(c);
+            });
+        }
+    }
+
+    /**
+     * Ataches listener for every element in seriesList.
      */
     private void attachSeriesListListener() {
-        // Add change listener to listen for any changes in the list of series.
         seriesList.addListener((ListChangeListener) c -> {
-            // A data series has been added. Add this series to listen for change events.
-            if (c.wasAdded()) {
-                List<CartesianPlane> subList = c.getAddedSubList();
-                attachSeriesListeners(subList);
-                refreshChart();
-            } else if (c.wasRemoved()) {
-                refreshChart();
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    attachSingleSeriesListener(c.getAddedSubList());
+                    updateLegendVisible();
+                }
             }
         });
     }
 
     /**
-     * Adds listeners on individual series.
+     * Called when a single series is changed.
      *
-     * @param lists
+     * @param c
      */
-    private void attachSeriesListeners(List<CartesianPlane> lists) {
-        for (int i = 0; i < lists.size(); i++) {
-            ObservableList<XY> currentSeries = lists.get(i).getPoints();
-            currentSeries.addListener((ListChangeListener) c -> updateSingleSeries(c));
+    private void processSingleSeriesChange(ListChangeListener.Change c) {
+        while (c.next()) {
+            if (c.wasAdded()) {
+                double maxX = xMax;
+                List<XYChart.Data<Number, Number>> sublist = c.getAddedSubList();
+                for (int i = 0; i < sublist.size(); i++) {
+                    XYChart.Data<Number, Number> p = sublist.get(i);
+                    double x = p.getXValue().doubleValue();
+                    double y = p.getYValue().doubleValue();
+
+                    if (x > maxX) maxX = x;
+                }
+                setXMax(maxX);
+            }
         }
     }
 
-    public void updateSingleSeries(ListChangeListener.Change c) {
+    /**
+     * Sets the xMax and changes the bounds of the x-axis.
+     * This is what gives it realtime.
+     *
+     * @param xMax
+     */
+    private void setXMax(double xMax) {
+        this.xMax = xMax;
 
+        // Update the xAxis range
+        double xMin = xMax - xWidth;
+        xAxis.setLowerBound(xMin);
+        xAxis.setUpperBound(xMax);
     }
 
-    private void refreshChart() {
-
+    public double getXWidth() {
+        return xWidth;
     }
 
-    private void addLineChart() {
-        xAxis = new NumberAxis();
-        yAxis = new NumberAxis();
-        xAxis.setLabel("Number of Month");
-        LineChart<Number, Number> lineChart = new LineChart<>(xAxis, yAxis);
-        lineChart.setTitle("Stock Monitoring, 2010");
-
-        // Defining a series.
-        series = new XYChart.Series();
-        series.setName("My Portfolio");
-
-        // Populate series with data.
-        series.getData().add(new XYChart.Data(1, 23));
-        series.getData().add(new XYChart.Data(2, 14));
-        series.getData().add(new XYChart.Data(3, 15));
-        series.getData().add(new XYChart.Data(4, 24));
-        series.getData().add(new XYChart.Data(5, 34));
-        series.getData().add(new XYChart.Data(6, 36));
-        series.getData().add(new XYChart.Data(7, 22));
-        series.getData().add(new XYChart.Data(8, 45));
-        series.getData().add(new XYChart.Data(9, 43));
-        series.getData().add(new XYChart.Data(10, 17));
-        series.getData().add(new XYChart.Data(11, 29));
-        series.getData().add(new XYChart.Data(12, 25));
-
-        lineChart.getData().add(series);
-        plotPane.getChildren().add(lineChart);
-
-
-        lineChart.setAnimated(true);
-        xAxis.setAutoRanging(false);
+    public void setXWidth(double xWidth) {
+        this.xWidth = xWidth;
     }
 
-    public void doDebug() {
-        series.getData().add(new XYChart.Data(15, 34));
-        series.getData().add(new XYChart.Data(16, 36));
-        series.getData().add(new XYChart.Data(17, 22));
-        series.getData().add(new XYChart.Data(18, 45));
-        xAxis.setLowerBound(5);
+    public LineChart<Number, Number> getChart() {
+        return chart;
     }
 }

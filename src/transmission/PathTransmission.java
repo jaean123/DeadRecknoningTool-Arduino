@@ -1,26 +1,27 @@
 package transmission;
 
-import data.CartesianPlane;
-import data.XY;
 import data.DeadReckoner;
+import javafx.scene.chart.XYChart;
 
 import java.util.ArrayList;
 
 public class PathTransmission implements Transmission {
 
-    CartesianPlane coordinates;
+    private XYChart.Series<Double, Double> series;
 
-    DeadReckoner deadReckoner;
+    private DeadReckoner deadReckoner;
 
     public PathTransmission() {
         //deadReckoner = new DeadReckoner(coordinates);
+        series = new XYChart.Series<>();
     }
 
     @Override
     public void processTransmission(ArrayList<Integer> signal) {
         // Get initial point x and y
-        XY currentPoint = new XY(signal.get(0), signal.get(1));
-        coordinates.getPoints().add(currentPoint);
+        double x = signal.get(0);
+        double y = signal.get(1);
+        series.getData().add(new XYChart.Data<>(x, y));
 
 
         /*for (int i = 3; i < signal.length()-1; i++) { TODO figure out and re-implement.
