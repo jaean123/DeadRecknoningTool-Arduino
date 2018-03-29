@@ -1,5 +1,6 @@
 package mainApp;
 
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -26,6 +27,10 @@ public class RealtimeChart extends Region {
     private double xWidth;
     private double xMax;
 
+    public RealtimeChart(String title, String xLabel, String yLabel) {
+        LineChart<Number, Number> temp = new LineChart<Number, Number>(new NumberAxis(), new NumberAxis());
+        constructObject(title, xLabel, yLabel, temp.getData());
+    }
 
     public RealtimeChart(String title, String xLabel, String yLabel, XYChart.Series<Number, Number> series) {
         ObservableList<XYChart.Series<Number, Number>> list = FXCollections.observableList(new ArrayList<>());
@@ -50,6 +55,7 @@ public class RealtimeChart extends Region {
         yAxis.setLabel(yLabel);
 
         chart = new LineChart<Number, Number>(xAxis, yAxis, seriesList);
+        chart.setCreateSymbols(false);
         attachSeriesListListener();
         attachSingleSeriesListener(seriesList);
         setLayout();
@@ -58,9 +64,9 @@ public class RealtimeChart extends Region {
     private void setLayout() {
         getStyleClass().add("realtimeChart");
         getChildren().add(chart);
-        setScaleX(1.2);
-        setScaleY(1.2);
-        setTranslateY(400);
+
+        chart.prefWidthProperty().bind(widthProperty());
+        chart.getStyleClass().add("lineChart");
         updateLegendVisible();
     }
 
@@ -137,12 +143,27 @@ public class RealtimeChart extends Region {
         xAxis.setUpperBound(xMax);
     }
 
+    public void setSeries(XYChart.Series<Number, Number> series) {
+        ObservableList<XYChart.Series<Number, Number>> list = FXCollections.observableList(new ArrayList<>());
+        list.add(series);
+    }
+
     public double getXWidth() {
         return xWidth;
     }
 
     public void setXWidth(double xWidth) {
         this.xWidth = xWidth;
+    }
+
+    public void setSize(double w, double h) {
+        chart.setPrefSize(w, h);
+        chart.setMinSize(w, h);
+        chart.setMaxSize(w, h);
+    }
+
+    public void clear() {
+
     }
 
     public LineChart<Number, Number> getChart() {

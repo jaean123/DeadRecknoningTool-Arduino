@@ -1,6 +1,10 @@
 package mainApp;
 
 import data.GlobalConstants;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.beans.value.ChangeListener;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -11,6 +15,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.File;
 
@@ -25,13 +30,14 @@ public class View {
 
     private BorderPane root;
     private SplitPane splitPane;
-    private HBox plotPane;
+    private ScrollPane leftPane;
+    private VBox plotPane;
     private Pane pathPane;
     private HBox buttonPane;
 
     private HBox topRightContainer;
-
     private HBox topLeftContainer;
+
     private Button clearBtn;
     private Button serialBtn;
     private Button zoomInBtn;
@@ -42,6 +48,10 @@ public class View {
 
     private PathPolyLine actualPath; // Dead reckoned path.
     private PathPolyLine targetPath; // Path drawn.
+
+    private RealtimeChart errorPlot; // error vs. time plot.
+
+    private TitledPane parametersList; // List of parameters
 
     public View(BorderPane root, MainApp app) {
         this.root = root;
@@ -67,8 +77,8 @@ public class View {
         series.setName("My portfolio");
         //populating the series with data
 
-        series.getData().add(new XYChart.Data(1, 23));
-        series.getData().add(new XYChart.Data(2, 14));
+/*        series.getData().add(new XYChart.Data(1, 23));
+        series.getData().add(new XYChart.Data(2, 5));
         series.getData().add(new XYChart.Data(3, 15));
         series.getData().add(new XYChart.Data(4, 24));
         series.getData().add(new XYChart.Data(5, 34));
@@ -78,15 +88,17 @@ public class View {
         series.getData().add(new XYChart.Data(9, 43));
         series.getData().add(new XYChart.Data(10, 17));
         series.getData().add(new XYChart.Data(11, 29));
-        series.getData().add(new XYChart.Data(12, 25));
+        series.getData().add(new XYChart.Data(12, 25));*/
 
-        RealtimeChart chart = new RealtimeChart("Test Chart", "x", "y", series);
-        plotPane.getChildren().add(chart);
-        plotPane.setAlignment(Pos.CENTER);
+        ObservableList<XYChart.Data<Number, Number>> data = series.getData();
+        errorPlot.setXWidth(2 * Math.PI);
+        errorPlot.setSeries(series);
 
-
-        series.getData().add(new XYChart.Data(100, 25));
-        series.getData().add(new XYChart.Data(120, 200));
+        double angle = 0, step = 0.01;
+        while (angle < 2 * Math.PI) {
+            data.add(new XYChart.Data<>(angle, Math.sin(angle)));
+            angle += step;
+        }
     }
 
     /**
@@ -125,15 +137,52 @@ public class View {
         HBox.setHgrow(region2, Priority.ALWAYS);
         buttonPane.getChildren().addAll(topLeftContainer, region1, region2, topRightContainer);
 
-        // Bottom portion of app.
+        // Split plane for main section of app
         splitPane = new SplitPane();
-        plotPane = new HBox();
 
-        // Path will be drawn in this Pane.
+        // Left main section of app.
+        leftPane = new ScrollPane();
+        plotPane = new VBox();
+        leftPane.setContent(plotPane);
+        VBox paramsList = new VBox();
+        parametersList = new TitledPane("PID Parameters", paramsList);
+        plotPane.getChildren().add(parametersList);
+
+        // TODO clean this up.
+        GridPane paramsContainer = new GridPane();
+        Label pLabel = new Label("P: ");
+        Label iLabel = new Label("I: ");
+        Label dLabel = new Label("D: ");
+        TextField pField = new TextField();
+        TextField iField = new TextField();
+        TextField dField = new TextField();
+        Button pSet = new Button("Set");
+        Button iSet = new Button("Set");
+        Button dSet = new Button("Set");
+        paramsContainer.add(pLabel, 0, 0);
+        paramsContainer.add(pField, 1, 0);
+        paramsContainer.add(pSet, 2, 0);
+        paramsContainer.add(iLabel, 0, 1);
+        paramsContainer.add(iField, 1, 1);
+        paramsContainer.add(iSet, 2, 1);
+        paramsContainer.add(dLabel, 0, 2);
+        paramsContainer.add(dField, 1, 2);
+        paramsContainer.add(dSet, 2, 2);
+        paramsContainer.setVgap(7);
+        paramsContainer.setHgap(10);
+
+        parametersList.setContent(paramsContainer);
+        parametersList.getStyleClass().add("parametersList");
+
+        errorPlot = new RealtimeChart("Test Chart", "Time (s)", "Error (cm)");
+        plotPane.getChildren().add(errorPlot);
+        plotPane.setAlignment(Pos.CENTER);
+
+        // Right main section of app.
         pathPane = new Pane();
         pathPane.setPrefSize(350, 600);
 
-        splitPane.getItems().addAll(plotPane, pathPane);
+        splitPane.getItems().addAll(leftPane, pathPane);
 
         root.setTop(buttonPane);
         root.setCenter(splitPane);
@@ -162,7 +211,9 @@ public class View {
         topLeftContainer.getStyleClass().add("buttonPannelContainer");
         topRightContainer.getStyleClass().add("buttonPannelContainer");
 
+        splitPane.setId("splitPane");
         plotPane.setId("plotPane");
+        leftPane.setId("leftPane");
         pathPane.setId("pathPane");
 
         buttonPane.setId("buttonPane");
@@ -197,6 +248,34 @@ public class View {
         pathPane.setOnMouseDragged(e -> app.getController().processPathPaneMouseDrag(e));
         pathPane.setOnMouseReleased(e -> app.getController().processPathPaneMouseDragReleased());
         pathPane.setOnScroll(e -> app.getController().processPathPaneScroll(e));
+
+        leftPane.widthProperty().addListener((ChangeListener)(p1, p2, p3) -> {
+            Timeline timeline = new Timeline(new KeyFrame(
+                    Duration.millis(400),
+                    ae -> {
+//                        plotPane.setPrefWidth(root.getWidth() - pathPane.getWidth() - 15);
+                    }));
+            timeline.play();
+            System.out.println(leftPane.getWidth());
+        });
+
+        leftPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        leftPane.setMinWidth(300);
+        leftPane.prefWidthProperty().bind(splitPane.getDividers().get(0).positionProperty().multiply(splitPane.widthProperty()));
+        plotPane.prefWidthProperty().bind(leftPane.widthProperty());
+
+//        splitPane.getDividers().get(0).positionProperty().addListener((ChangeListener)(p1, p2, p3) -> {
+//            plotPane.setPrefWidth(root.getWidth() - pathPane.getWidth() - 15);
+//        });
+
+//        plotPane.prefWidthProperty().bind(root.widthProperty().subtract(pathPane.widthProperty()).subtract(10));
+
+        //        chart.setPrefWidth(root.getPrefWidth() - pathPane.getPrefWidth());
+/*        splitPane.getDividers().get(0).positionProperty().addListener((ChangeListener)(p1, p2, p3) -> {
+            chart.setPrefWidth(root.getWidth() - pathPane.getWidth() - 15);
+        });*/
+//        chart.prefWidthProperty().bind(root.widthProperty().subtract(pathPane.widthProperty()).subtract(15));
+//        chart.setMinWidth(400);
 
         // handle plus or minus zoom key presses.
         root.getScene().setOnKeyPressed(e -> app.getController().processKeyPress(e));

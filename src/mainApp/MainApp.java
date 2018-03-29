@@ -14,11 +14,13 @@ import java.io.File;
  */
 public class MainApp extends Application {
 
-    Controller controller;
-    View view;
+    private Controller controller;
+    private View view;
+    private Stage stage;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        stage = primaryStage;
         BorderPane root = new BorderPane();
         primaryStage.setTitle(GlobalConstants.APP_NAME);
         primaryStage.setScene(new Scene(root, 800, 600));
@@ -40,5 +42,9 @@ public class MainApp extends Application {
 
     public View getView() {
         return view;
+    }
+
+    public Stage getStage() {
+        return stage;
     }
 }

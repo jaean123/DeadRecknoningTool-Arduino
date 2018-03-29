@@ -3,8 +3,8 @@
 }
 
 #buttonPane {
-    -fx-border-width: 1px 0 0 0;
-    -fx-border-color: #BBBBBB;
+    -fx-border-width: 1px 0 1px 0;
+    -fx-border-color: #dddddd;
     -fx-padding: 10px;
     -fx-spacing: 10px;
 }
@@ -21,22 +21,36 @@
     -fx-border-color: #d9d9d9;
 }
 
+#leftPane {
+    -fx-background-color: white;
+}
+#splitPane {
+    -fx-background-color: white;
+}
+
 .buttonPannelContainer {
     -fx-spacing: 10px;
 }
 
 .border-left {
     -fx-border-width: 0 0 0 1px;
-    -fx-border-color: #BBBBBB;
+    -fx-border-color: #dddddd;
 }
-
+.parametersList {
+    -fx-padding: 10px;
+}
 
 
 /* CHART STYLES */
 
 .realtimeChart {
-    -fx-border-width: 2px;
-    -fx-border-color: black;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-border-color: #DDDDDD;
+    -fx-border-insets: 10px;
+}
+.lineChart {
+    -fx-padding: 15px;
 }
 .chart-plot-background {
     -fx-background-color: white;
