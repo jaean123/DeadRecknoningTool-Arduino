@@ -8,5 +8,5 @@ public interface Transmission {
     public static final char START_TICK_TRANSMISSION = 't';
     public static final char END_TRANSMISSION = '\n';
 
-    public void processTransmission(ArrayList<Integer> signal);
+    public void processTransmission(ArrayList signal);
 }
