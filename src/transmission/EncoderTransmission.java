@@ -18,9 +18,9 @@ public class EncoderTransmission implements Transmission {
     }
 
     @Override
-    public void processTransmission(ArrayList<Integer> signal) {
+    public void processTransmission(ArrayList signal) {
         try {
-            EncoderData data = new EncoderData(signal.get(0), signal.get(1), signal.get(2));
+            EncoderData data = new EncoderData((Integer) signal.get(0), (Integer) signal.get(1), (Integer) signal.get(2));
             encoderHistory.add(data);
         }
         catch (Exception ex) {
