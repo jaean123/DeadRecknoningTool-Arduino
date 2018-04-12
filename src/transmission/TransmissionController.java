@@ -14,8 +14,7 @@ public class TransmissionController {
     SerialController serialController;
 
     private static EncoderTransmission driveTransmission;
-    private static PathTransmission originalPathTransmission;
-    private static StringBuilder transmission;
+    private static PathTransmission pathTransmission;
 
     private TransmissionController() {
 
@@ -29,11 +28,12 @@ public class TransmissionController {
     }
 
     public static void flushTransmission(String input) throws InvalidTransmissionException {
+        System.out.print(input);
         if (input.charAt(0) == Transmission.START_TICK_TRANSMISSION) {
             driveTransmission.processTransmission(parseTransmissionString(input, DELIMETER));
         }
         else if (input.charAt(0) == Transmission.START_ORIGINAL_PATH_TRANSMISSION) {
-            originalPathTransmission.processTransmission(parseTransmissionString(input, DELIMETER));
+            pathTransmission.processTransmission(parseTransmissionString(input, DELIMETER));
         }
         else {
             throw new InvalidTransmissionException("Start of transmission not found.");
@@ -42,8 +42,7 @@ public class TransmissionController {
 
     public boolean startTransmission(String comPort) {
         driveTransmission = new EncoderTransmission();
-        originalPathTransmission = new PathTransmission();
-        transmission = new StringBuilder();
+        pathTransmission = new PathTransmission();
 
         serialController = new SerialController();
         return serialController.initialize(comPort);
@@ -57,12 +56,12 @@ public class TransmissionController {
         return driveTransmission;
     }
 
-    public PathTransmission getOriginalPathTransmission() {
-        return originalPathTransmission;
+    public PathTransmission getPathTransmission() {
+        return pathTransmission;
     }
 
-    public static ArrayList<Integer> parseTransmissionString(String text, char delimeter) {
-        ArrayList<Integer> signal = new ArrayList<>();
+    public static ArrayList parseTransmissionString(String text, char delimeter) {
+        ArrayList<Number> signal = new ArrayList<>();
         // Iterate through every character with delimeter and parse the character inputs.
         // First character is ommitted since that is start of transmission character value.
         int prev = 1;
@@ -70,7 +69,7 @@ public class TransmissionController {
         for (int i = 1; i < text.length(); i++) {
             char c = text.charAt(i);
             if (c == delimeter) {
-                signal.add(Integer.parseInt(text.substring(prev, i)));
+                signal.add(Double.parseDouble(text.substring(prev, i)));
                 prev = ++i;
             }
         }
