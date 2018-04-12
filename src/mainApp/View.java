@@ -16,8 +16,11 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import transmission.PathTransmission;
+import transmission.TransmissionController;
 
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  * View class deals with GUI layout, styling, and event handlers.
@@ -281,31 +284,42 @@ public class View {
         root.getScene().setOnKeyPressed(e -> app.getController().processKeyPress(e));
     }
 
+    public static ArrayList<Double> getTestPoint(double x, double y) {
+        ArrayList<Double> list = new ArrayList<>();
+        list.add(x); list.add(y);
+        return list;
+    }
+
     protected void startDrawingPath() {
 //        CartesianPlane path = TransmissionController.getInstance().getEncoderTransmission().getDeadReckoner().getPlane();
-        XYChart.Series<Double, Double> path = new XYChart.Series<>();
+        PathTransmission trans = new PathTransmission();
+        trans.processTransmission(getTestPoint(1, 1));
+        trans.processTransmission(getTestPoint(2, 2));
+        trans.processTransmission(getTestPoint(3, 3));
+        trans.processTransmission(getTestPoint(0, 1));
+        trans.processTransmission(getTestPoint(6, 3));
+        //TransmissionController.getInstance().getPathTransmission()
+        XYChart.Series<Double, Double> path = trans.getSeries();
 
-        path.getData().add(new XYChart.Data<Double, Double>(0.0, 0.0));
+       /* path.getData().add(new XYChart.Data<Double, Double>(0.0, 0.0));
         path.getData().add(new XYChart.Data<Double, Double>(1.0, 1.0));
         path.getData().add(new XYChart.Data<Double, Double>(2.0, 2.0));
         path.getData().add(new XYChart.Data<Double, Double>(3.0, 3.0));
         path.getData().add(new XYChart.Data<Double, Double>(4.0, 4.0));
         path.getData().add(new XYChart.Data<Double, Double>(5.0, 5.0));
         path.getData().add(new XYChart.Data<Double, Double>(100.0, 100.0));
-        path.getData().add(new XYChart.Data<Double, Double>(0.0, 100.0));
+        path.getData().add(new XYChart.Data<Double, Double>(0.0, 100.0));*/
 
-        pathPane.setBackground(
+/*        pathPane.setBackground(
                 new Background(
                         new BackgroundFill(
-                                GlobalConstants.PATH_PANE_BACKGROUND_COLOR, CornerRadii.EMPTY, Insets.EMPTY)));
+                                GlobalConstants.PATH_PANE_BACKGROUND_COLOR, CornerRadii.EMPTY, Insets.EMPTY)));*/
 
         actualPath = new PathPolyLine(path, GlobalConstants.ACTUAL_PATH_LINE_COLOR);
-        targetPath = new PathPolyLine(path, GlobalConstants.TARGET_PATH_LINE_COLOR);
+        targetPath = new PathPolyLine(new XYChart.Series<Double, Double>(), GlobalConstants.TARGET_PATH_LINE_COLOR);
         actualPath.setScaleX(2.0);
         actualPath.setScaleY(2.0);
-        pathPane.getChildren().addAll(actualPath, targetPath);
-//        actualPath = new Draw(pathPane, path, GlobalConstants.ACTUAL_PATH_LINE_COLOR);
-//        targetPath = new Draw(pathPane, path, GlobalConstants.TARGET_PATH_LINE_COLOR);
+        pathPane.getChildren().add(actualPath);
     }
 
     /**
