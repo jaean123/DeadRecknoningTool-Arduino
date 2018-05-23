@@ -1,23 +1,27 @@
 package transmission;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Singleton class for controlling the serial communication in the app.
  */
 public class TransmissionController {
 
-    private static TransmissionController instance = null;
-
-    private static final char DELIMETER = ';';
+    private static TransmissionController instance;
 
     SerialController serialController;
 
+    private static ArrayList<Byte> signalBuffer;
+
     private static EncoderTransmission driveTransmission;
+
     private static PathTransmission pathTransmission;
 
-    private TransmissionController() {
+    private ArrayList<Byte> prevByteArray;
 
+    private TransmissionController() {
+        signalBuffer = new ArrayList<>();
     }
 
     public static TransmissionController getInstance() {
@@ -27,17 +31,67 @@ public class TransmissionController {
         return instance;
     }
 
-    public static void flushTransmission(String input) throws InvalidTransmissionException {
-        System.out.print(input);
-        if (input.charAt(0) == Transmission.START_TICK_TRANSMISSION) {
-            driveTransmission.processTransmission(parseTransmissionString(input, DELIMETER));
+    public void processTransmission() {
+        ArrayList<ArrayList<Byte>> transmissions = new ArrayList<>();
+        // -1 is the delimeter for each transmission.
+        // This method is buggy Fix is needed and rewrite. Code is a mess.
+        byte delimeter = -1;
+
+        // remove until first delimeter if not at 0th index.
+        int dIndex = signalBuffer.indexOf(delimeter);
+        if (dIndex > 0) {
+            for (int i = 0; i < dIndex; i++) {
+                signalBuffer.remove(0);
+            }
         }
-        else if (input.charAt(0) == Transmission.START_ORIGINAL_PATH_TRANSMISSION) {
-            pathTransmission.processTransmission(parseTransmissionString(input, DELIMETER));
+
+        int secondDIndex = signalBuffer.subList(1, signalBuffer.size()).indexOf(delimeter);
+        if (secondDIndex == -1) {
+            return;
         }
-        else {
-            throw new InvalidTransmissionException("Start of transmission not found.");
+
+        if (prevByteArray != null) {
+            transmissions.add(prevByteArray);
+            prevByteArray = null;
         }
+
+        // while there are still things to be parsed into sub-transmissions.
+        while (true) {
+            // remove the first delimeter at index 0.
+            signalBuffer.remove(0);
+            dIndex = signalBuffer.indexOf(delimeter);
+            if (dIndex > 0) {
+                ArrayList<Byte> trans = new ArrayList<>(signalBuffer.subList(0, dIndex));
+                if (trans.size() == PathTransmission.BYTES_TO_READ) {
+                    transmissions.add(trans);
+                }
+                for (int i = 0; i < dIndex; i++) {
+                    // remove from the zeroth index to the dIndex inclusive.
+                    signalBuffer.remove(0);
+                }
+            }
+            else {
+                break;
+            }
+        }
+
+        int size = transmissions.size();
+
+        // if the array is not divisible by 2, then remove the last element.
+        if (size % 2 != 0) {
+            prevByteArray = transmissions.remove(size-1);
+        }
+
+        // path transmission must be sent two at a time in pairs for x and y values.
+        for (int i = 0; i+1 < transmissions.size(); i += 2) {
+            pathTransmission.processTransmission(transmissions.get(i)); // send x value
+            pathTransmission.processTransmission(transmissions.get(i+1)); // send y value
+        }
+    }
+
+    public void flushTransmission(ArrayList<Byte> input) throws InvalidTransmissionException {
+        signalBuffer.addAll(input);
+        processTransmission();
     }
 
     public boolean startTransmission(String comPort) {
@@ -60,7 +114,8 @@ public class TransmissionController {
         return pathTransmission;
     }
 
-    public static ArrayList parseTransmissionString(String text, char delimeter) {
+    public static ArrayList<ArrayList<Number>> parseTransmissionString(String text, char delimeter) {
+        ArrayList<ArrayList<Number>> commandList = new ArrayList<>();
         ArrayList<Number> signal = new ArrayList<>();
         // Iterate through every character with delimeter and parse the character inputs.
         // First character is ommitted since that is start of transmission character value.
@@ -73,7 +128,7 @@ public class TransmissionController {
                 prev = ++i;
             }
         }
-        return signal;
+        return commandList;
     }
 
     public static void clear() {

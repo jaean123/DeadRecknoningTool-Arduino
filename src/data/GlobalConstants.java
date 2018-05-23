@@ -28,6 +28,8 @@ public class GlobalConstants {
     public static final String ENTER_PORT =  "Enter Port: ";
     public static final String OPEN_SERIAL = "Open Serial";
     public static final String OPEN_SERIAL_TOOLTIP = "Open serial communication at COM port";
+    public static String TRANSLATE_TO_PATH = "T";
+    public static String ABOUT_TRANSLATE_TO_PATH = "Show path starting point";
     public static final String ZOOM_IN = "+";
     public static final String ZOOM_IN_TOOLTIP = "Zoom In (+ key)";
     public static final String ZOOM_OUT = "-";

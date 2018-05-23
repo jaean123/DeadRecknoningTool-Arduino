@@ -17,6 +17,14 @@ public class PathPolyLine extends Polyline {
         setStroke(lineColor);
         refreshDrawing();
         attachDataChangeListener();
+        translateToPath();
+    }
+
+    public void translateToPath() {
+        /*double x = getPoints().get(getPoints().size()-2).doubleValue();
+        double y = getPoints().get(getPoints().size()-1).doubleValue();
+        setTranslateX(x);
+        setTranslateY(y);*/
     }
 
     /**
@@ -30,6 +38,7 @@ public class PathPolyLine extends Polyline {
             double x = p.getXValue()*scaleFactor;
             double y = p.getYValue()*scaleFactor;
             getPoints().addAll(x, y);
+//            System.out.println("(" + x + ", " + y + ")");
         }
     }
 
@@ -41,15 +50,18 @@ public class PathPolyLine extends Polyline {
         // Listen for changes on coordinate data to be drawn.
         ObservableList<XYChart.Data<Double, Double>> pointsToDraw = path.getData();
         pointsToDraw.addListener((ListChangeListener)(c -> {
-            // Add the latest location to the polyline.
-            if (c.wasAdded() && c.getAddedSize() == 1) {
-                XYChart.Data<Double, Double> latest = (XYChart.Data<Double, Double>)c.getAddedSubList().get(0);
-                double x = latest.getXValue()*scaleFactor;
-                double y = latest.getYValue()*scaleFactor;
-                getPoints().addAll(x, y);
-            }
-            else {
-                refreshDrawing();
+            while (c.next()) {
+                // Add the latest location to the polyline.
+                if (c.wasAdded() && c.getAddedSize() == 1) {
+                    XYChart.Data<Double, Double> latest = (XYChart.Data<Double, Double>)c.getAddedSubList().get(0);
+                    double x = latest.getXValue()*scaleFactor;
+                    double y = latest.getYValue()*scaleFactor;
+                    getPoints().addAll(x, y);
+                    System.out.println("(" + x + ", " + y + ")");
+                }
+                else {
+                    refreshDrawing();
+                }
             }
         }));
     }

@@ -43,6 +43,7 @@ public class View {
 
     private Button clearBtn;
     private Button serialBtn;
+    private Button translateBtn;
     private Button zoomInBtn;
     private Button zoomOutBtn;
     private Button aboutBtn;
@@ -62,7 +63,6 @@ public class View {
         setLayout();
         applyStyles();
         initEventHandlers();
-        startDrawingPath();
         testPlotPane();
     }
 
@@ -121,6 +121,8 @@ public class View {
         topLeftContainer.getChildren().addAll(comPortTextFieldLabel, comPortTextField, serialBtn);
 
         // Top right portion of buttonPane UI components
+        translateBtn = new Button(GlobalConstants.TRANSLATE_TO_PATH);
+        translateBtn.setTooltip(new Tooltip(GlobalConstants.ABOUT_TRANSLATE_TO_PATH));
         zoomInBtn = new Button(GlobalConstants.ZOOM_IN);
         zoomInBtn.setTooltip(new Tooltip(GlobalConstants.ZOOM_IN_TOOLTIP));
         zoomOutBtn = new Button(GlobalConstants.ZOOM_OUT);
@@ -130,7 +132,7 @@ public class View {
         clearBtn = new Button(GlobalConstants.CLEAR);
         clearBtn.setTooltip(new Tooltip(GlobalConstants.CLEAR_TOOLTIP));
         topRightContainer = new HBox();
-        topRightContainer.getChildren().addAll(zoomInBtn, zoomOutBtn, aboutBtn, clearBtn);
+        topRightContainer.getChildren().addAll(translateBtn, zoomInBtn, zoomOutBtn, aboutBtn, clearBtn);
 
         // Left, center, right placement in top HBox.
         // Refer to: https://stackoverflow.com/questions/41654333/how-to-align-children-in-a-hbox-left-center-and-right
@@ -234,6 +236,8 @@ public class View {
 
         clearBtn.setOnAction(e -> app.getController().processClear());
 
+        translateBtn.setOnAction(e -> actualPath.translateToPath());
+
         zoomInBtn.setOnAction(e -> zoomIn());
 
         zoomOutBtn.setOnAction(e -> zoomOut());
@@ -291,35 +295,20 @@ public class View {
     }
 
     protected void startDrawingPath() {
-//        CartesianPlane path = TransmissionController.getInstance().getEncoderTransmission().getDeadReckoner().getPlane();
-        PathTransmission trans = new PathTransmission();
-        trans.processTransmission(getTestPoint(1, 1));
-        trans.processTransmission(getTestPoint(2, 2));
-        trans.processTransmission(getTestPoint(3, 3));
-        trans.processTransmission(getTestPoint(0, 1));
-        trans.processTransmission(getTestPoint(6, 3));
-        //TransmissionController.getInstance().getPathTransmission()
-        XYChart.Series<Double, Double> path = trans.getSeries();
-
-       /* path.getData().add(new XYChart.Data<Double, Double>(0.0, 0.0));
-        path.getData().add(new XYChart.Data<Double, Double>(1.0, 1.0));
-        path.getData().add(new XYChart.Data<Double, Double>(2.0, 2.0));
-        path.getData().add(new XYChart.Data<Double, Double>(3.0, 3.0));
-        path.getData().add(new XYChart.Data<Double, Double>(4.0, 4.0));
-        path.getData().add(new XYChart.Data<Double, Double>(5.0, 5.0));
-        path.getData().add(new XYChart.Data<Double, Double>(100.0, 100.0));
-        path.getData().add(new XYChart.Data<Double, Double>(0.0, 100.0));*/
-
+        XYChart.Series<Double, Double> series = TransmissionController.getInstance().getPathTransmission().getSeries();
+        actualPath = new PathPolyLine(series, GlobalConstants.ACTUAL_PATH_LINE_COLOR);
+        pathPane.getChildren().add(actualPath);
 /*        pathPane.setBackground(
                 new Background(
                         new BackgroundFill(
                                 GlobalConstants.PATH_PANE_BACKGROUND_COLOR, CornerRadii.EMPTY, Insets.EMPTY)));*/
 
-        actualPath = new PathPolyLine(path, GlobalConstants.ACTUAL_PATH_LINE_COLOR);
-        targetPath = new PathPolyLine(new XYChart.Series<Double, Double>(), GlobalConstants.TARGET_PATH_LINE_COLOR);
+//        actualPath = new PathPolyLine(path, GlobalConstants.ACTUAL_PATH_LINE_COLOR);
+/*        targetPath = new PathPolyLine(new XYChart.Series<Double, Double>(), GlobalConstants.TARGET_PATH_LINE_COLOR);
         actualPath.setScaleX(2.0);
         actualPath.setScaleY(2.0);
-        pathPane.getChildren().add(actualPath);
+        pathPane.getChildren().add(actualPath);*/
+
     }
 
     /**
@@ -351,8 +340,10 @@ public class View {
      * Zoom path view in/out.
      */
     protected void zoom(double increment) {
-        actualPath.setScaleFactor(actualPath.getScaleFactor() + increment);
-        targetPath.setScaleFactor(targetPath.getScaleFactor() + increment);
+        if (actualPath != null)
+            actualPath.setScaleFactor(actualPath.getScaleFactor() + increment);
+        if (targetPath != null)
+            targetPath.setScaleFactor(targetPath.getScaleFactor() + increment);
     }
 
     protected void zoomIn() {
@@ -364,10 +355,14 @@ public class View {
     }
 
     public void translate(double dX, double dY) {
-        actualPath.setTranslateX(actualPath.getTranslateX() + dX);
-        actualPath.setTranslateY(actualPath.getTranslateY() + dY);
-        targetPath.setTranslateX(targetPath.getTranslateX() + dX);
-        targetPath.setTranslateY(targetPath.getTranslateY() + dY);
+        if (actualPath != null) {
+            actualPath.setTranslateX(actualPath.getTranslateX() + dX);
+            actualPath.setTranslateY(actualPath.getTranslateY() + dY);
+        }
+        if (targetPath != null) {
+            targetPath.setTranslateX(targetPath.getTranslateX() + dX);
+            targetPath.setTranslateY(targetPath.getTranslateY() + dY);
+        }
     }
 
     protected void translateUp() {
