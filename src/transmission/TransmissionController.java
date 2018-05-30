@@ -86,6 +86,7 @@ public class TransmissionController {
         for (int i = 0; i+1 < transmissions.size(); i += 2) {
             pathTransmission.processTransmission(transmissions.get(i)); // send x value
             pathTransmission.processTransmission(transmissions.get(i+1)); // send y value
+
         }
     }
 

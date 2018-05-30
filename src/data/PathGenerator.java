@@ -15,10 +15,11 @@ public class PathGenerator {
         DecimalFormat df1 = new DecimalFormat("0.00");
         DecimalFormat df2 = new DecimalFormat("0");
         ArrayList<XYChart.Data<Number, Number>> infPoints = getInfinityPoints(5, 600);
-        ArrayList<XYChart.Data<Number, Number>> circlePoints = getCirclePoints(10*Math.PI/180, 600);
+        ArrayList<XYChart.Data<Number, Number>> circlePoints = getCirclePoints(10*Math.PI/180, 3600);
 //        System.out.println(commaFormat(infPoints, df2));
 //        System.out.println(tableFormat(infPoints, df1));
         System.out.println(commaFormat(circlePoints, df2));
+        System.out.println("size: " + circlePoints.size());
 //        System.out.println(tableFormat(circlePoints, df2));
     }
 
